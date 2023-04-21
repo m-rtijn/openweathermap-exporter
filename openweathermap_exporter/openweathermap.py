@@ -14,15 +14,13 @@ class Coordinate:
     lat: float
     lon: float
 
-    def __init__(self, lat: float, lon: float):
-        """Create a Coordinate from floats"""
-        self.lat = lat
-        self.lon = lon
-    
-    def __init__(self, obj):
-        """Create a Coordinate from a dictionary with lat and lon values"""
-        self.lat = obj['lat']
-        self.lon = obj['lon']
+    def __init__(self, **kwargs):
+        try:
+            self.lat = kwargs["lat"]
+            self.lon = kwargs["lon"]
+        except KeyError:
+            self.lat = kwargs["obj"]["lat"]
+            self.lon = kwargs["obj"]["lon"]
     
     def __str__(self):
         return f"Coordinate(lat={self.lat}, lon={self.lon})"
@@ -57,7 +55,7 @@ class OpenWeatherMap:
 
         resp = self.owm_api_request(GEOCODING_API_BASE_URL, parameters)[0]
 
-        return Coordinate(resp['lat'], resp['lon'])
+        return Coordinate(obj=resp)
 
     def get_current_weather(self, coord: Coordinate, units="metric") -> dict:
         """Use Current Weather API to get current weather information
@@ -110,31 +108,11 @@ class WeatherInformation:
     timestamp: datetime
     sunrise: datetime
     sunset: datetime
-
-    def __init__(self, temp, temp_feels_like, temp_min, temp_max,
-                 pressure, humidity, wind_speed, wind_deg,
-                 wind_gust, cloudiness, rain_volume_1h,
-                 rain_volume_3h, timestamp, sunrise, sunset):
-        self.temp = temp
-        self.temp_feels_like = temp_feels_like
-        self.temp_min = temp_min
-        self.temp_max = temp_max
-        self.pressure = pressure
-        self.humidity = humidity
-        self.wind_speed = wind_speed
-        self.wind_gust = wind_gust
-        self.wind_deg = wind_deg
-        self.cloudiness = cloudiness
-        self.rain_volume_1h = rain_volume_1h
-        self.rain_volume_3h = rain_volume_3h
-        self.timestamp = timestamp
-        self.sunrise = sunrise
-        self.sunset = sunset
     
     def __init__(self, obj: dict):
         """Create WeatherInformation object from a dictionary result from the CurrentWeather API"""
         self.temp = obj["main"]["temp"]
-        self.temp_feels_like = obj["main"]["temp_feels_like"]
+        self.temp_feels_like = obj["main"]["feels_like"]
         self.temp_max = obj["main"]["temp_max"]
         self.temp_min = obj["main"]["temp_min"]
         self.pressure = obj["main"]["pressure"]
@@ -157,18 +135,12 @@ class WeatherInformation:
         self.sunset = datetime.fromtimestamp(obj["sys"]["sunset"])
 
 class CurrentWeather:
-
     coord: Coordinate
     condition: WeatherCondition
     information: WeatherInformation
-
-    def __init__(self, coord: Coordinate, condition: WeatherCondition, information: WeatherInformation):
-        self.coord = coord
-        self.condition = condition
-        self.information = information
     
     def __init__(self, obj: dict):
-        self.coord = Coordinate(obj["coord"])
+        self.coord = Coordinate(obj=obj["coord"])
         self.information = WeatherInformation(obj)
         self.condition = None
 
