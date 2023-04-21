@@ -24,7 +24,7 @@
 """
 
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import lru_cache
 import json
 from typing import Optional
@@ -155,10 +155,21 @@ class Location:
 
     coord: Coordinate
 
+    last_weather: Optional[WeatherInformation]
+
     def __init__(self, location_name: str, country_code: str, owm: OpenWeatherMap):
         self.location_name = location_name
         self.country_code = country_code
         self.coord = owm.get_coordinate(location_name, country_code)
+
+        self.last_weather = None
     
     def get_weather(self, owm: OpenWeatherMap) -> WeatherInformation:
-        return owm.get_current_weather(self.coord)
+        if self.last_weather == None:
+            self.last_weather = owm.get_current_weather(self.coord)
+        else:
+            time_since_last_update: timedelta = datetime.now() - self.last_weather.timestamp
+            if time_since_last_update > timedelta(minutes=10):
+                self.last_weather = owm.get_current_weather(self.coord)
+
+        return self.last_weather
