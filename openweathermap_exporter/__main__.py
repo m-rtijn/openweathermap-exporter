@@ -24,6 +24,8 @@ if __name__ == "__main__":
     for conf_location in config["exporter"]["locations"]:
         locations.append(Location(conf_location["name"], conf_location["cc"], owm))
 
+    # TODO: Add caching, since values are only updated
+    # once every 10 minutes: https://openweathermap.org/appid#work
     for loc in locations:
         gauge_temp.labels(
             location_name=loc.location_name,
@@ -31,6 +33,30 @@ if __name__ == "__main__":
             longitude=loc.coord.lon,
             location_country_code=loc.country_code
             ).set_function(lambda : loc.get_weather(owm).temp)
+        gauge_temp_min.labels(
+            location_name=loc.location_name,
+            latitude=loc.coord.lat,
+            longitude=loc.coord.lon,
+            location_country_code=loc.country_code
+            ).set_function(lambda : loc.get_weather(owm).temp_min)
+        gauge_temp_max.labels(
+            location_name=loc.location_name,
+            latitude=loc.coord.lat,
+            longitude=loc.coord.lon,
+            location_country_code=loc.country_code
+            ).set_function(lambda : loc.get_weather(owm).temp_max)
+        gauge_pressure.labels(
+            location_name=loc.location_name,
+            latitude=loc.coord.lat,
+            longitude=loc.coord.lon,
+            location_country_code=loc.country_code
+            ).set_function(lambda : loc.get_weather(owm).pressure)
+        gauge_humidity.labels(
+            location_name=loc.location_name,
+            latitude=loc.coord.lat,
+            longitude=loc.coord.lon,
+            location_country_code=loc.country_code
+            ).set_function(lambda : loc.get_weather(owm).humidity)
 
     start_http_server(8080)
 
