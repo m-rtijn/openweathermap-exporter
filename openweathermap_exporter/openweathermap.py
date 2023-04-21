@@ -89,12 +89,12 @@ class OpenWeatherMap:
 
         self.api_key = config["owm"]["api_key"]
 
-    def owm_api_request(self, base_url: str, parameters: dict) -> dict:
+    def owm_api_request(self, base_url: str, parameters: dict, timeout_time=10) -> dict:
         """Do a request to an OpenWeatherMap API endpoint."""
 
         parameters["appid"] = self.api_key
 
-        resp = requests.get(base_url, params=parameters)
+        resp = requests.get(base_url, params=parameters, timeout=timeout_time)
 
         return json.loads(resp.text)
 
@@ -135,3 +135,5 @@ class Location:
         self.country_code = country_code
         self.coord = owm.get_coordinate(location_name, country_code)
     
+    def get_weather(self, owm: OpenWeatherMap) -> WeatherInformation:
+        return owm.get_current_weather(self.coord)
