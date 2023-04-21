@@ -1,4 +1,3 @@
-import configparser
 from datetime import datetime
 from functools import lru_cache
 import json
@@ -43,6 +42,9 @@ class WeatherInformation:
     cloudiness: float
     rain_volume_1h: Optional[float]
     rain_volume_3h: Optional[float]
+
+    # TODO: Add parsing for snow
+
     timestamp: datetime
     sunrise: datetime
     sunset: datetime
@@ -83,11 +85,8 @@ class OpenWeatherMap:
 
     api_key: str
 
-    def __init__(self, config_filename="openweathermap_exporter.conf"):
-        config = configparser.ConfigParser()
-        config.read(config_filename)
-
-        self.api_key = config["owm"]["api_key"]
+    def __init__(self, api_key: str):
+        self.api_key = api_key
 
     def owm_api_request(self, base_url: str, parameters: dict, timeout_time=10) -> dict:
         """Do a request to an OpenWeatherMap API endpoint."""

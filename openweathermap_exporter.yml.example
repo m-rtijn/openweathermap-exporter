@@ -1,0 +1,7 @@
+---
+owm:
+    api_key: API_KEY
+exporter:
+  locations:
+    - name: "Utrecht"
+      cc: "NL"
