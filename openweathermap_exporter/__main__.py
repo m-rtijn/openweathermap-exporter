@@ -249,10 +249,10 @@ if __name__ == "__main__":
     owm = OpenWeatherMap(config["owm"]["api_key"])
 
     locations: list[Location] = []
-    for conf_location in config["exporter"]["locations"]:
+    for conf_location in config["prometheus_exporter"]["locations"]:
         locations.append(Location(conf_location["name"], conf_location["cc"], owm))
 
-    start_http_server(config["exporter"]["port"])
+    start_http_server(config["prometheus_exporter"]["port"], config["prometheus_exporter"]["host"])
 
     # Not sure why this is required?
     while True:
