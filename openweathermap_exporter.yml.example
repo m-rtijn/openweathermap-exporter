@@ -1,9 +1,9 @@
 ---
 owm:
-    api_key: API_KEY
+    api_key: "API_KEY"
 prometheus_exporter:
   host: 127.0.0.1
-  port: 8080
+  port: 9755
   locations:
     - name: "Utrecht"
       cc: "NL"
