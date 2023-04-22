@@ -35,6 +35,7 @@ CURRENT_WEATHER_API_BASE_URL="https://api.openweathermap.org/data/2.5/weather"
 CURRENT_AIR_POLLUTION_API_BASE_URL="http://api.openweathermap.org/data/2.5/air_pollution"
 
 class Coordinate:
+    """Class representing a coordinate defined by latitude and longitude."""
 
     lat: float
     lon: float
@@ -46,11 +47,12 @@ class Coordinate:
         except KeyError:
             self.lat = kwargs["obj"]["lat"]
             self.lon = kwargs["obj"]["lon"]
-    
+
     def __str__(self):
         return f"Coordinate(lat={self.lat}, lon={self.lon})"
 
 class WeatherInformation:
+    """Class representing weather information as provided by the OpenWeatherMap API."""
     coord: Coordinate
 
     # TODO: Maybe add weather condition parsing?
@@ -75,7 +77,9 @@ class WeatherInformation:
     sunset: datetime
 
     def __init__(self, obj: dict):
-        """Create WeatherInformation object from a dictionary result from the OWM CurrentWeather API
+        """
+        Create WeatherInformation object from a dictionary result from the
+        OpenWeatherMap CurrentWeather API.
 
         https://openweathermap.org/current
         """
@@ -115,9 +119,11 @@ class WeatherInformation:
         self.sunset = datetime.fromtimestamp(obj["sys"]["sunset"])
 
     def __str__(self):
-        return f"WeatherInformation(temp={self.temp}, humidity={self.humidity}, timestamp={self.timestamp}, coord={self.coord})"
+        return f"""WeatherInformation(temp={self.temp}, humidity={self.humidity},
+            timestamp={self.timestamp}, coord={self.coord})"""
 
 class AirPollutionInformation:
+    """Class representing air pollution information as provided by the OpenWeatherMap API."""
     coord: Coordinate
     timestamp: datetime
     air_quality_index: int
@@ -150,11 +156,13 @@ class AirPollutionInformation:
         self.nh3 = res_obj["components"]["nh3"]
 
     def __str__(self):
-        return f"""AirPollutionInformation(timestamp={self.timestamp}, aqi={self.air_quality_index}, co={self.co},
-            no={self.no}, no2={self.no2}, o3={self.o3}, so2={self.so2}, pm2_5={self.pm2_5},
-            pm10={self.pm10}, nh3={self.nh3})"""
+        return f"""AirPollutionInformation(timestamp={self.timestamp},
+            aqi={self.air_quality_index}, co={self.co}, no={self.no}, no2={self.no2},
+            o3={self.o3}, so2={self.so2}, pm2_5={self.pm2_5}, pm10={self.pm10},
+            nh3={self.nh3})"""
 
 class OpenWeatherMap:
+    """Basic wrapper around the OpenWeatherMap APIs."""
 
     api_key: str
 
@@ -210,6 +218,7 @@ class OpenWeatherMap:
         return AirPollutionInformation(resp)
 
 class Location:
+    """A location about which weather information can be requested via the OpenWeatherMap API."""
 
     owm: OpenWeatherMap
 
@@ -228,7 +237,8 @@ class Location:
         self.coord = self.owm.get_coordinate(location_name, country_code)
 
     def __str__(self):
-        return f"Location(location_name={self.location_name}, country_code={self.country_code}, {self.coord})"
+        return f"""Location(location_name={self.location_name},
+            country_code={self.country_code}, {self.coord})"""
 
     def get_current_weather(self) -> WeatherInformation:
         """Get current weather information for this location.
@@ -242,7 +252,7 @@ class Location:
         if self.last_current_weather is None:
             self.last_current_weather = self.owm.get_current_weather(self.coord)
         else:
-            time_since_last_update: timedelta = datetime.now() - self.last_current_weather.timestamp
+            time_since_last_update = datetime.now() - self.last_current_weather.timestamp
             if time_since_last_update > timedelta(minutes=10):
                 self.last_current_weather = self.owm.get_current_weather(self.coord)
 
@@ -260,7 +270,7 @@ class Location:
         if self.last_current_air_pollution is None:
             self.last_current_air_pollution = self.owm.get_current_air_pollution(self.coord)
         else:
-            time_since_last_update: timedelta = datetime.now() - self.last_current_air_pollution.timestamp
+            time_since_last_update = datetime.now() - self.last_current_air_pollution.timestamp
             if time_since_last_update > timedelta(minutes=10):
                 self.last_current_air_pollution = self.owm.get_current_air_pollution(self.coord)
 
