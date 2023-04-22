@@ -7,3 +7,7 @@ prometheus_exporter:
   locations:
     - name: "Utrecht"
       cc: "NL"
+    - name: "Formerum, Terschelling"
+      cc: "NL"
+      lat: 53.3963726
+      lon: 5.2717206
