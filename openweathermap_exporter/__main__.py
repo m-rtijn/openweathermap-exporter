@@ -201,7 +201,8 @@ air_pollution_gauges = {
     gauge_nh3 : "nh3"
 }
 
-meta_metrics = {}
+# TODO: Maybe add a metric for total api calls done?
+# meta_metrics = {}
 
 def get_location_current_weather(location: Location, attr: str):
     """Helper function to easily get current weather data via a partial."""

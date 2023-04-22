@@ -126,6 +126,9 @@ class AirPollutionInformation:
     """Class representing air pollution information as provided by the OpenWeatherMap API."""
     coord: Coordinate
     timestamp: datetime
+
+    # For meaning and possible values of this value,
+    # see https://openweathermap.org/api/air-pollution
     air_quality_index: int
     co: float
     no: float
@@ -165,6 +168,7 @@ class OpenWeatherMap:
     """Basic wrapper around the OpenWeatherMap APIs."""
 
     api_key: str
+    api_calls_count: int = 0
 
     def __init__(self, api_key: str):
         self.api_key = api_key
@@ -172,6 +176,8 @@ class OpenWeatherMap:
     # TODO: Add request self-limiting
     def owm_api_request(self, base_url: str, parameters: dict, timeout_time=10) -> dict:
         """Do a request to an OpenWeatherMap API endpoint."""
+
+        self.api_calls_count += 1
 
         parameters["appid"] = self.api_key
 
