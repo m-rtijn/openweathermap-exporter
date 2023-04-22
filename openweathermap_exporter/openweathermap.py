@@ -51,12 +51,46 @@ class Coordinate:
     def __str__(self):
         return f"Coordinate(lat={self.lat}, lon={self.lon})"
 
+class WeatherCondition:
+    """Class representing one weather condition as provided by the OpenWeatherMap API.
+
+    For more information, see https://openweathermap.org/weather-conditions
+    """
+
+    id: int
+    main: str
+    description: str
+    icon_id: str
+
+    def __init__(self, obj: dict):
+        print(obj)
+        try:
+            self.id = obj["id"]
+        except:
+            self.id = -999
+        try:
+            self.main = obj["main"]
+        except:
+            self.main = "Weather condition main not found"
+        try:
+            self.description = obj["description"]
+        except:
+            self.description = "Weather condititon description not found"
+        try:
+            self.icon_id = obj["icon"]
+        except:
+            self.icon_id = "Weather condition icon id not found"
+
+        print(self)
+
+    def __str__(self):
+        return (f"WeatherCondition(id={self.icon_id},main={self.main},"
+                f"description={self.description},icon_id={self.icon_id})")
+
 class WeatherInformation:
     """Class representing weather information as provided by the OpenWeatherMap API."""
     coord: Coordinate
-
-    # TODO: Maybe add weather condition parsing?
-
+    weather_conditions: list[WeatherCondition] = []
     temp: float
     temp_feels_like: float
     temp_min: float
@@ -84,6 +118,10 @@ class WeatherInformation:
         https://openweathermap.org/current
         """
         self.coord = Coordinate(obj=obj["coord"])
+
+        for weather_condition_obj in obj["weather"]:
+            self.weather_conditions.append(WeatherCondition(weather_condition_obj))
+
         self.temp = obj["main"]["temp"]
         self.temp_feels_like = obj["main"]["feels_like"]
         self.temp_max = obj["main"]["temp_max"]
@@ -119,8 +157,8 @@ class WeatherInformation:
         self.sunset = datetime.fromtimestamp(obj["sys"]["sunset"])
 
     def __str__(self):
-        return f"""WeatherInformation(temp={self.temp}, humidity={self.humidity},
-            timestamp={self.timestamp}, coord={self.coord})"""
+        return (f"WeatherInformation(temp={self.temp}, humidity={self.humidity},"
+                f"timestamp={self.timestamp}, coord={self.coord})")
 
 class AirPollutionInformation:
     """Class representing air pollution information as provided by the OpenWeatherMap API."""
@@ -159,10 +197,10 @@ class AirPollutionInformation:
         self.nh3 = res_obj["components"]["nh3"]
 
     def __str__(self):
-        return f"""AirPollutionInformation(timestamp={self.timestamp},
-            aqi={self.air_quality_index}, co={self.co}, no={self.no}, no2={self.no2},
-            o3={self.o3}, so2={self.so2}, pm2_5={self.pm2_5}, pm10={self.pm10},
-            nh3={self.nh3})"""
+        return (f"AirPollutionInformation(timestamp={self.timestamp},"
+                f"aqi={self.air_quality_index}, co={self.co}, no={self.no}, no2={self.no2},"
+                f"o3={self.o3}, so2={self.so2}, pm2_5={self.pm2_5}, pm10={self.pm10},"
+                f"nh3={self.nh3})")
 
 class OpenWeatherMap:
     """Basic wrapper around the OpenWeatherMap APIs."""
@@ -185,8 +223,7 @@ class OpenWeatherMap:
 
         return json.loads(resp.text)
 
-    # TODO: Make max cachesize configurable?
-    @lru_cache(maxsize=64)
+    @lru_cache(maxsize=256)
     def get_coordinate(self, location_name: str, country_code: str) -> Coordinate:
         """Use Geocoding API to map a location_name and country_code to a coordinate.
 
