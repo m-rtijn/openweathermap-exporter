@@ -68,9 +68,8 @@ class WeatherInformation:
     cloudiness: float
     rain_volume_1h: Optional[float]
     rain_volume_3h: Optional[float]
-
-    # TODO: Add parsing for snow
-
+    snow_volume_1h: Optional[float]
+    snow_volume_3h: Optional[float]
     timestamp: datetime
     sunrise: datetime
     sunset: datetime
@@ -100,6 +99,14 @@ class WeatherInformation:
             self.rain_volume_3h = obj["rain"]["3h"]
         except KeyError:
             self.rain_volume_3h = None
+        try:
+            self.snow_volume_1h = obj["snow"]["1h"]
+        except KeyError:
+            self.snow_volume_1h = None
+        try:
+            self.snow_volume_3h = obj["snow"]["3h"]
+        except KeyError:
+            self.snow_volume_3h = None
         self.timestamp = datetime.fromtimestamp(obj["dt"])
         self.sunrise = datetime.fromtimestamp(obj["sys"]["sunrise"])
         self.sunset = datetime.fromtimestamp(obj["sys"]["sunset"])
