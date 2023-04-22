@@ -268,7 +268,20 @@ if __name__ == "__main__":
 
     locations: list[Location] = []
     for conf_location in config["prometheus_exporter"]["locations"]:
-        locations.append(Location(conf_location["name"], conf_location["cc"], owm))
+        try:
+            locations.append(Location(
+                owm,
+                location_name=conf_location["name"],
+                country_code=conf_location["cc"],
+                lat=conf_location["lat"],
+                lon=conf_location["lon"]
+            ))
+        except KeyError:
+            locations.append(Location(
+                owm,
+                location_name=conf_location["name"],
+                country_code=conf_location["cc"]
+            ))
 
     start_http_server(config["prometheus_exporter"]["port"], config["prometheus_exporter"]["host"])
 

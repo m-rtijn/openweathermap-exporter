@@ -236,11 +236,20 @@ class Location:
     last_current_weather: Optional[WeatherInformation] = None
     last_current_air_pollution: Optional[AirPollutionInformation] = None
 
-    def __init__(self, location_name: str, country_code: str, owm: OpenWeatherMap):
-        self.location_name = location_name
-        self.country_code = country_code
+    def __init__(self, owm: OpenWeatherMap, **kwargs):
+        """Create a new Location instance.
+
+        location_name and country_code keyword arguments are required.
+        If lat= and lon= are provided, these values will be used for the Coordinate,
+        otherwise the OpenWeatherMap Geocode API will be used to get the coordinates."""
+        self.location_name = kwargs["location_name"]
+        self.country_code = kwargs["country_code"]
         self.owm = owm
-        self.coord = self.owm.get_coordinate(location_name, country_code)
+
+        try:
+            self.coord = Coordinate(lat=kwargs["lat"], lon=kwargs["lon"])
+        except KeyError:
+            self.coord = self.owm.get_coordinate(self.location_name, self.country_code)
 
     def __str__(self):
         return f"""Location(location_name={self.location_name},
