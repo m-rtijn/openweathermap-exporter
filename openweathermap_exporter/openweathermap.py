@@ -68,10 +68,10 @@ class WeatherInformation:
     wind_deg: float
     wind_gust: Optional[float]
     cloudiness: float
-    rain_volume_1h: Optional[float]
-    rain_volume_3h: Optional[float]
-    snow_volume_1h: Optional[float]
-    snow_volume_3h: Optional[float]
+    rain_volume_1h: float
+    rain_volume_3h: float
+    snow_volume_1h: float
+    snow_volume_3h: float
     timestamp: datetime
     sunrise: datetime
     sunset: datetime
@@ -101,19 +101,19 @@ class WeatherInformation:
         try:
             self.rain_volume_1h = obj["rain"]["1h"]
         except KeyError:
-            self.rain_volume_1h = None
+            self.rain_volume_1h = 0
         try:
             self.rain_volume_3h = obj["rain"]["3h"]
         except KeyError:
-            self.rain_volume_3h = None
+            self.rain_volume_3h = 0
         try:
             self.snow_volume_1h = obj["snow"]["1h"]
         except KeyError:
-            self.snow_volume_1h = None
+            self.snow_volume_1h = 0
         try:
             self.snow_volume_3h = obj["snow"]["3h"]
         except KeyError:
-            self.snow_volume_3h = None
+            self.snow_volume_3h = 0
         self.timestamp = datetime.fromtimestamp(obj["dt"])
         self.sunrise = datetime.fromtimestamp(obj["sys"]["sunrise"])
         self.sunset = datetime.fromtimestamp(obj["sys"]["sunset"])
