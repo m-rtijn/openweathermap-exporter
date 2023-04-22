@@ -38,8 +38,12 @@ gauge_pressure = Gauge("weather_pressure", "Outside pressure in hPa provided by 
 gauge_humidity = Gauge("weather_humidity", "Outside relative humidity in % provided by OpenWeatherMap", labelnames=label_names)
 gauge_wind_speed = Gauge("weather_wind_speed", "Outside wind speed in m/s provided by OpenWeatherMap", labelnames=label_names)
 
-def get_location_current_weather(l: Location, owm: OpenWeatherMap, attr: str):
-    return getattr(l.get_current_weather(owm), attr)
+# Helper functions so that we can create handy callback for Gauge.set_function using functools.partial
+def get_location_current_weather(location: Location, attr: str):
+    return getattr(location.get_current_weather(), attr)
+
+def get_location_current_air_pollution(location: Location, attr: str):
+    return getattr(location.get_current_air_pollution(), attr)
 
 if __name__ == "__main__":
 

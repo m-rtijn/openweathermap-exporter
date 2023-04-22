@@ -75,7 +75,10 @@ class WeatherInformation:
     sunset: datetime
 
     def __init__(self, obj: dict):
-        """Create WeatherInformation object from a dictionary result from the CurrentWeather API"""
+        """Create WeatherInformation object from a dictionary result from the OWM CurrentWeather API
+
+        https://openweathermap.org/current
+        """
         self.coord = Coordinate(obj=obj["coord"])
         self.temp = obj["main"]["temp"]
         self.temp_feels_like = obj["main"]["feels_like"]
@@ -114,6 +117,43 @@ class WeatherInformation:
     def __str__(self):
         return f"WeatherInformation(temp={self.temp}, humidity={self.humidity}, timestamp={self.timestamp}, coord={self.coord})"
 
+class AirPollutionInformation:
+    coord: Coordinate
+    timestamp: datetime
+    air_quality_index: int
+    co: float
+    no: float
+    no2: float
+    o3: float
+    so2: float
+    pm2_5: float
+    pm10: float
+    nh3: float
+
+    def __init__(self, obj: dict):
+        """Parse air pollution information from the OWM Air Pollution API.
+
+        https://openweathermap.org/api/air-pollution
+        """
+
+        self.coord = Coordinate(obj=obj["coord"])
+        res_obj = obj["list"][0]
+        self.timestamp = datetime.fromtimestamp(res_obj["dt"])
+        self.air_quality_index = res_obj["main"]["aqi"]
+        self.co = res_obj["components"]["co"]
+        self.no = res_obj["components"]["no"]
+        self.no2 = res_obj["components"]["no2"]
+        self.o3 = res_obj["components"]["o3"]
+        self.so2 = res_obj["components"]["so2"]
+        self.pm2_5 = res_obj["components"]["pm2_5"]
+        self.pm10 = res_obj["components"]["pm10"]
+        self.nh3 = res_obj["components"]["nh3"]
+
+    def __str__(self):
+        return f"""AirPollutionInformation(timestamp={self.timestamp}, aqi={self.air_quality_index}, co={self.co},
+            no={self.no}, no2={self.no2}, o3={self.o3}, so2={self.so2}, pm2_5={self.pm2_5},
+            pm10={self.pm10}, nh3={self.nh3})"""
+
 class OpenWeatherMap:
 
     api_key: str
@@ -146,7 +186,7 @@ class OpenWeatherMap:
         return Coordinate(obj=resp)
 
     def get_current_weather(self, coord: Coordinate, units="metric") -> WeatherInformation:
-        """Use Current Weather API to get current weather information
+        """Use Current Weather API to get current weather information.
 
         https://openweathermap.org/current
         """
@@ -157,38 +197,71 @@ class OpenWeatherMap:
 
         return WeatherInformation(resp)
 
+    def get_current_air_pollution(self, coord: Coordinate) -> AirPollutionInformation:
+        """Use Current Air Pollution API to get current air pollution information.
+
+        https://openweathermap.org/api/air-pollution
+        """
+
+        parameters = {"lat": coord.lat, "lon": coord.lon}
+
+        resp = self.owm_api_request(CURRENT_AIR_POLLUTION_API_BASE_URL, parameters)
+
+        return AirPollutionInformation(resp)
+
 class Location:
+
+    owm: OpenWeatherMap
 
     location_name: str
     country_code: str
 
     coord: Coordinate
 
-    last_current_weather: Optional[WeatherInformation]
+    last_current_weather: Optional[WeatherInformation] = None
+    last_current_air_pollution: Optional[AirPollutionInformation] = None
 
     def __init__(self, location_name: str, country_code: str, owm: OpenWeatherMap):
         self.location_name = location_name
         self.country_code = country_code
-        self.coord = owm.get_coordinate(location_name, country_code)
-
-        self.last_current_weather = None
+        self.owm = owm
+        self.coord = self.owm.get_coordinate(location_name, country_code)
 
     def __str__(self):
         return f"Location(location_name={self.location_name}, country_code={self.country_code}, {self.coord})"
 
-    def get_current_weather(self, owm: OpenWeatherMap) -> WeatherInformation:
+    def get_current_weather(self) -> WeatherInformation:
         """Get current weather information for this location.
 
-        Weather information is cached internally, so that the OpenWeatherMap API
+        The information is cached internally, so that the OpenWeatherMap API
         will not be called more than once per location per ten minutes, since that
         is the internal update frequency of OpenWeatherMap.
             For more information, see https://openweathermap.org/appid#apicare.
         """
+
         if self.last_current_weather is None:
-            self.last_current_weather = owm.get_current_weather(self.coord)
+            self.last_current_weather = self.owm.get_current_weather(self.coord)
         else:
             time_since_last_update: timedelta = datetime.now() - self.last_current_weather.timestamp
             if time_since_last_update > timedelta(minutes=10):
-                self.last_current_weather = owm.get_current_weather(self.coord)
+                self.last_current_weather = self.owm.get_current_weather(self.coord)
 
         return self.last_current_weather
+
+    def get_current_air_pollution(self) -> AirPollutionInformation:
+        """Get current air pollution information for this location.
+
+        The information is cached internally, so that the OpenWeatherMap API
+        will not be called more than once per location per ten minutes, since that
+        is the internal update frequency of OpenWeatherMap.
+            For more information, see https://openweathermap.org/appid#apicare.
+        """
+
+        if self.last_current_air_pollution is None:
+            self.last_current_air_pollution = self.owm.get_current_air_pollution(self.coord)
+        else:
+            time_since_last_update: timedelta = datetime.now() - self.last_current_air_pollution.timestamp
+            if time_since_last_update > timedelta(minutes=10):
+                self.last_current_air_pollution = self.owm.get_current_air_pollution(self.coord)
+
+        return self.last_current_air_pollution
