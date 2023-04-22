@@ -244,8 +244,13 @@ def set_metrics(locations: list[Location]):
 
 if __name__ == "__main__":
 
-    # TODO: Let config path be passed via command line argument
-    with open("openweathermap_exporter.yml", 'r') as f:
+    config_filepath: str
+    try:
+        config_filepath = environ["OPENWEATHERMAP_EXPORTER_CONFIGURATION_FILE"]
+    except:
+        config_filepath = "openweathermap_exporter.yml"
+
+    with open(config_filepath, 'r') as f:
         config = yaml.load(f, Loader=yaml.SafeLoader)
 
     api_key: str
