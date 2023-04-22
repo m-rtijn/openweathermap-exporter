@@ -24,6 +24,8 @@
 """
 
 from functools import partial
+from os import environ
+from sys import exit
 from time import sleep
 
 import yaml
@@ -246,7 +248,18 @@ if __name__ == "__main__":
     with open("openweathermap_exporter.yml", 'r') as f:
         config = yaml.load(f, Loader=yaml.SafeLoader)
 
-    owm = OpenWeatherMap(config["owm"]["api_key"])
+    api_key: str
+    try:
+        api_key = config["owm"]["api_key"]
+    except (KeyError, TypeError):
+        try:
+            api_key = environ["OPENWEATHERMAP_API_KEY"]
+        except KeyError:
+            exit("Fatal error: no OpenWeatherMap API key provided."
+            " Please set the environment variable OPENWEATHERMAP_API_KEY or provide the API key"
+            " via the configuration file.")
+
+    owm = OpenWeatherMap(api_key)
 
     locations: list[Location] = []
     for conf_location in config["prometheus_exporter"]["locations"]:
