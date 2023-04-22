@@ -2,6 +2,7 @@
 owm:
     api_key: API_KEY
 exporter:
+  port: 8080
   locations:
     - name: "Utrecht"
       cc: "NL"
