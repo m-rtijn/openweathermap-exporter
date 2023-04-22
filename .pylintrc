@@ -2,7 +2,7 @@
 fail-under=9.0
 
 [MESSAGES CONTROL]
-disable=R0902, R0903
+disable=R0902, R0903, W1514
 
 [TYPECHECK]
 
