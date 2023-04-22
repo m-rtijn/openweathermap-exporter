@@ -24,6 +24,7 @@
 """
 
 import yaml
+from functools import partial
 from prometheus_client import Gauge, start_http_server
 
 from openweathermap import Location, OpenWeatherMap, WeatherInformation
@@ -36,6 +37,9 @@ gauge_temp_max = Gauge("weather_temp_max", "Outside maximum temperature in degre
 gauge_pressure = Gauge("weather_pressure", "Outside pressure in hPa provided by OpenWeatherMap", labelnames=label_names)
 gauge_humidity = Gauge("weather_humidity", "Outside relative humidity in % provided by OpenWeatherMap", labelnames=label_names)
 gauge_wind_speed = Gauge("weather_wind_speed", "Outside wind speed in m/s provided by OpenWeatherMap", labelnames=label_names)
+
+def get_location_current_weather(l: Location, owm: OpenWeatherMap, attr: str):
+    return getattr(l.get_current_weather(owm), attr)
 
 if __name__ == "__main__":
 
@@ -55,31 +59,31 @@ if __name__ == "__main__":
             latitude=loc.coord.lat,
             longitude=loc.coord.lon,
             location_country_code=loc.country_code
-            ).set_function(lambda : loc.get_weather(owm).temp)
+            ).set_function(partial(get_location_current_weather, loc, owm, "temp"))
         gauge_temp_min.labels(
             location_name=loc.location_name,
             latitude=loc.coord.lat,
             longitude=loc.coord.lon,
             location_country_code=loc.country_code
-            ).set_function(lambda : loc.get_weather(owm).temp_min)
+            ).set_function(partial(get_location_current_weather, loc, owm, "temp_min"))
         gauge_temp_max.labels(
             location_name=loc.location_name,
             latitude=loc.coord.lat,
             longitude=loc.coord.lon,
             location_country_code=loc.country_code
-            ).set_function(lambda : loc.get_weather(owm).temp_max)
+            ).set_function(partial(get_location_current_weather, loc, owm, "temp_max"))
         gauge_pressure.labels(
             location_name=loc.location_name,
             latitude=loc.coord.lat,
             longitude=loc.coord.lon,
             location_country_code=loc.country_code
-            ).set_function(lambda : loc.get_weather(owm).pressure)
+            ).set_function(partial(get_location_current_weather, loc, owm, "pressure"))
         gauge_humidity.labels(
             location_name=loc.location_name,
             latitude=loc.coord.lat,
             longitude=loc.coord.lon,
             location_country_code=loc.country_code
-            ).set_function(lambda : loc.get_weather(owm).humidity)
+            ).set_function(partial(get_location_current_weather, loc, owm, "humidity"))
 
     start_http_server(config["exporter"]["port"])
 

@@ -114,6 +114,7 @@ class OpenWeatherMap:
     def __init__(self, api_key: str):
         self.api_key = api_key
 
+    # TODO: Add request self-limiting
     def owm_api_request(self, base_url: str, parameters: dict, timeout_time=10) -> dict:
         """Do a request to an OpenWeatherMap API endpoint."""
 
@@ -123,6 +124,7 @@ class OpenWeatherMap:
 
         return json.loads(resp.text)
 
+    # TODO: Make max cachesize configurable?
     @lru_cache(maxsize=64)
     def get_coordinate(self, location_name: str, country_code: str) -> Coordinate:
         """Use Geocoding API to map a location_name and country_code to a coordinate.
@@ -155,21 +157,31 @@ class Location:
 
     coord: Coordinate
 
-    last_weather: Optional[WeatherInformation]
+    last_current_weather: Optional[WeatherInformation]
 
     def __init__(self, location_name: str, country_code: str, owm: OpenWeatherMap):
         self.location_name = location_name
         self.country_code = country_code
         self.coord = owm.get_coordinate(location_name, country_code)
 
-        self.last_weather = None
-    
-    def get_weather(self, owm: OpenWeatherMap) -> WeatherInformation:
-        if self.last_weather == None:
-            self.last_weather = owm.get_current_weather(self.coord)
-        else:
-            time_since_last_update: timedelta = datetime.now() - self.last_weather.timestamp
-            if time_since_last_update > timedelta(minutes=10):
-                self.last_weather = owm.get_current_weather(self.coord)
+        self.last_current_weather = None
 
-        return self.last_weather
+    def __str__(self):
+        return f"Location(location_name={self.location_name}, country_code={self.country_code}, {self.coord})"
+
+    def get_current_weather(self, owm: OpenWeatherMap) -> WeatherInformation:
+        """Get current weather information for this location.
+
+        Weather information is cached internally, so that the OpenWeatherMap API
+        will not be called more than once per location per ten minutes, since that
+        is the internal update frequency of OpenWeatherMap.
+            For more information, see https://openweathermap.org/appid#apicare.
+        """
+        if self.last_current_weather is None:
+            self.last_current_weather = owm.get_current_weather(self.coord)
+        else:
+            time_since_last_update: timedelta = datetime.now() - self.last_current_weather.timestamp
+            if time_since_last_update > timedelta(minutes=10):
+                self.last_current_weather = owm.get_current_weather(self.coord)
+
+        return self.last_current_weather
