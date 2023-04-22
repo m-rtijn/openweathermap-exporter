@@ -1,0 +1,8 @@
+# This file is only read by systemd, so the safest is to set its permissions to 0600:
+# root root -rw------- 
+OPENWEATHERMAP_API_KEY="API_KEY"
+
+# Since we are running openweathermap_exporter with DynamicUser=true, the
+# configuration file must be readable by any user. The recommended permissions are 0644:
+# root root -rw-r--r--
+OPENWEATHERMAP_EXPORTER_CONFIGURATION_FILE="/etc/prometheus/openweathermap.yml"

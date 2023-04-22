@@ -1,0 +1,50 @@
+# Example systemd service file for openweathermap_exporter
+#
+# Note that is an example, you will probably need to edit this before you use
+# it in a production environment.
+
+[Unit]
+Description=Prometheus exporter for OpenWeatherMap data
+After=network.target
+
+[Service]
+#User=nobody
+WorkingDirectory=/opt/openweathermap_exporter/openweathermap_exporter
+EnvironmentFile=/etc/default/openweathermap_exporter
+Environment="PATH=/opt/openweathermap_exporter/venv/bin"
+ExecStart=/opt/openweathermap_exporter/venv/bin/python /opt/openweathermap_exporter/openweathermap_exporter
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+
+# Extra security hardening options
+
+# Empty because openweathermap_exporter does not require any special capability. See capabilities(7) for more information.
+CapabilityBoundingSet=
+DynamicUser=true
+#IPAddressAllow=127.0.0.0/8
+#IPAddressDeny=any # the allow-list is evaluated before the deny list. Since the default is to allow, we need to deny everything.
+LockPersonality=true
+MemoryDenyWriteExecute=true
+NoNewPrivileges=true
+PrivateDevices=true
+PrivateTmp=true
+PrivateUsers=true
+ProtectClock=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectHostname=true
+ProtectKernelLogs=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectSystem=strict
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+SystemCallArchitectures=native
+SystemCallErrorNumber=EPERM
+SystemCallFilter=@system-service
+UMask=077
+
+[Install]
+WantedBy=multi-user.target
