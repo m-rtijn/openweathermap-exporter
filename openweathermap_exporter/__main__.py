@@ -53,6 +53,12 @@ gauge_temp_max = Gauge(
     labelnames=label_names
     )
 
+gauge_temp_feels_like = Gauge(
+    "weather_temp_feels_like",
+    "Outside temperature adjusted to human perception in degrees Celcius provided by OpenWeatherMap",
+    labelnames=label_names
+)
+
 gauge_pressure = Gauge(
     "weather_pressure",
     "Outside pressure in hPa provided by OpenWeatherMap",
@@ -178,6 +184,7 @@ weather_gauges = {
     gauge_temp : "temp",
     gauge_temp_min : "temp_min",
     gauge_temp_max : "temp_max",
+    gauge_temp_feels_like : "temp_feels_like",
     gauge_pressure : "pressure",
     gauge_humidity : "humidity",
     gauge_visibility : "visibility",
