@@ -15,6 +15,7 @@ Environment="PATH=/opt/openweathermap_exporter/venv/bin"
 ExecStart=/opt/openweathermap_exporter/venv/bin/python /opt/openweathermap_exporter/openweathermap_exporter
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s TERM $MAINPID
+Restart=on-failure
 
 # Extra security hardening options
 
