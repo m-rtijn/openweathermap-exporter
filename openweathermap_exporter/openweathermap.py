@@ -63,7 +63,6 @@ class WeatherCondition:
     icon_id: str
 
     def __init__(self, obj: dict):
-        print(obj)
         try:
             self.id = obj["id"]
         except:
@@ -80,8 +79,6 @@ class WeatherCondition:
             self.icon_id = obj["icon"]
         except:
             self.icon_id = "Weather condition icon id not found"
-
-        print(self)
 
     def __str__(self):
         return (f"WeatherCondition(id={self.icon_id},main={self.main},"
