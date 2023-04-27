@@ -73,7 +73,7 @@ gauge_humidity = Gauge(
 
 gauge_visibility = Gauge(
     "weather_visibility",
-    "Visibility in meters. The maximum value of the visibility is 10km",
+    "Visibility in meters provided by OpenWeatherMap. The maximum value of the visibility is 10km.",
     labelnames=label_names
     )
 
@@ -85,7 +85,7 @@ gauge_wind_speed = Gauge(
 
 gauge_wind_deg = Gauge(
     "weather_wind_deg",
-    "Wind direction, degrees (meteorological)",
+    "Wind direction in degrees (meteorological) provided by OpenWeatherMap",
     labelnames=label_names
 )
 
@@ -97,86 +97,86 @@ gauge_wind_gust = Gauge(
 
 gauge_cloudiness = Gauge(
     "weather_cloudiness",
-    "Relative cloudiness in percentage",
+    "Relative cloudiness in percentage provided by OpenWeatherMap",
     labelnames=label_names
 )
 
 gauge_rain_volume_1h = Gauge(
     "weather_rain_volume_1h",
-    "Rain volume for the last 1 hour, mm",
+    "Rain volume for the last 1 hour in mm provided by OpenWeatherMap",
     labelnames=label_names
 )
 
 gauge_rain_volume_3h = Gauge(
     "weather_rain_volume_3h",
-    "Rain volume for the last 3 hours, mm",
+    "Rain volume for the last 3 hours in mm provided by OpenWeatherMap",
     labelnames=label_names
 )
 
 gauge_snow_volume_1h = Gauge(
     "weather_snow_volume_1h",
-    "Snow volume for the last 1 hour, mm",
+    "Snow volume for the last 1 hour in mm provided by OpenWeatherMap",
     labelnames=label_names
 )
 
 gauge_snow_volume_3h = Gauge(
     "weather_snow_volume_3h",
-    "Snow volume for the last 3 hours, mm",
+    "Snow volume for the last 3 hours in mm provided by OpenWeatherMap",
     labelnames=label_names
 )
 
 gauge_air_quality_index = Gauge(
     "air_pollution_air_quality_index",
-    """Air Quality Index. Possible values are: 1, 2, 3, 4, 5.
+    """Air Quality Index provided by OpenWeatherMap. Possible values are: 1, 2, 3, 4, 5.
     Where 1 = Good, 2 = Fair, 3 = Moderate, 4 = Poor, 5 = Very Poor.""",
     labelnames=label_names
 )
 
 gauge_co = Gauge(
     "air_pollution_co",
-    "Concentration of CO (carbon monoxide) in μg/m3",
+    "Concentration of CO (carbon monoxide) in μg/m3 provided by OpenWeatherMap",
     labelnames=label_names
 )
 
 gauge_no = Gauge(
     "air_pollution_no",
-    "Concentration of NO (nitrogen monoxide) in μg/m3",
+    "Concentration of NO (nitrogen monoxide) in μg/m3 provided by OpenWeatherMap",
     labelnames=label_names
 )
 
 gauge_no2 = Gauge(
     "air_pollution_no2",
-    "Concentration of NO2 (nitrogen dioxide) in μg/m3",
+    "Concentration of NO2 (nitrogen dioxide) in μg/m3 provided by OpenWeatherMap",
     labelnames=label_names
 )
 
 gauge_o3 = Gauge(
     "air_pollution_o3",
-    "Concentration of O3 (ozone) in μg/m3",
+    "Concentration of O3 (ozone) in μg/m3 provided by OpenWeatherMap",
     labelnames=label_names
 )
 
 gauge_so2 = Gauge(
     "air_pollution_so2",
-    "Concentration of SO2 (sulphur dioxide) in μg/m3",
+    "Concentration of SO2 (sulphur dioxide) in μg/m3 provided by OpenWeatherMap",
     labelnames=label_names
 )
 
 gauge_pm2_5 = Gauge(
     "air_pollution_pm2_5",
-    "Concentration of PM2.5 (fine particulate matter) in μg/m3",
+    "Concentration of PM2.5 (fine particulate matter) in μg/m3 provided by OpenWeatherMap",
     labelnames=label_names
 )
 
 gauge_pm10 = Gauge(
     "air_pollution_pm10",
-    "Concentration of PM10 (coarse particulate matter) in μg/m3",
+    "Concentration of PM10 (coarse particulate matter) in μg/m3 provided by OpenWeatherMap",
     labelnames=label_names
 )
 
 gauge_nh3 = Gauge(
     "air_pollution_nh3",
-    "Concentration of NH3 (ammonia) in μg/m3",
+    "Concentration of NH3 (ammonia) in μg/m3 provided by OpenWeatherMap",
     labelnames=label_names
 )
 
