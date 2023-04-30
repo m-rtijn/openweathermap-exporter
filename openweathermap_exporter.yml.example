@@ -4,6 +4,7 @@ owm:
 prometheus_exporter:
   host: 127.0.0.1
   port: 9755
+  open_meteo_additional_data: true
   locations:
     - name: "Utrecht"
       cc: "NL"

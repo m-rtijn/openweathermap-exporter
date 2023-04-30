@@ -7,4 +7,4 @@ disable=R0902, R0903, W1514
 [TYPECHECK]
 
 [BASIC]
-good-names=co,no,o3
+good-names=co,no,o3,id,om,

@@ -23,7 +23,6 @@
     SPDX-License-Identifier: AGPL-3.0-or-later
 """
 
-
 from datetime import datetime, timedelta
 from functools import lru_cache
 import json
@@ -45,8 +44,13 @@ class Coordinate:
             self.lat = kwargs["lat"]
             self.lon = kwargs["lon"]
         except KeyError:
-            self.lat = kwargs["obj"]["lat"]
-            self.lon = kwargs["obj"]["lon"]
+            try:
+                self.lat = kwargs["obj"]["lat"]
+                self.lon = kwargs["obj"]["lon"]
+            except KeyError:
+                self.lat = kwargs["obj"]["latitude"]
+                self.lon = kwargs["obj"]["longitude"]
+
 
     def __str__(self):
         return f"Coordinate(lat={self.lat}, lon={self.lon})"
@@ -175,7 +179,7 @@ class AirPollutionInformation:
     nh3: float
 
     def __init__(self, obj: dict):
-        """Parse air pollution information from the OWM Air Pollution API.
+        """Parse air pollution information from the OpenWeatherMap Air Pollution API.
 
         https://openweathermap.org/api/air-pollution
         """
@@ -257,7 +261,7 @@ class OpenWeatherMap:
 
         return AirPollutionInformation(resp)
 
-class Location:
+class OpenWeatherMapLocation:
     """A location about which weather information can be requested via the OpenWeatherMap API."""
 
     owm: OpenWeatherMap
@@ -271,7 +275,7 @@ class Location:
     last_current_air_pollution: Optional[AirPollutionInformation] = None
 
     def __init__(self, owm: OpenWeatherMap, **kwargs):
-        """Create a new Location instance.
+        """Create a new OpenWeatherMapLocation instance.
 
         location_name and country_code keyword arguments are required.
         If lat= and lon= are provided, these values will be used for the Coordinate,
@@ -286,8 +290,8 @@ class Location:
             self.coord = self.owm.get_coordinate(self.location_name, self.country_code)
 
     def __str__(self):
-        return f"""Location(location_name={self.location_name},
-            country_code={self.country_code}, {self.coord})"""
+        return (f"OpenWeatherMapLocation(location_name={self.location_name},"
+                f"country_code={self.country_code}, {self.coord})")
 
     def get_current_weather(self) -> WeatherInformation:
         """Get current weather information for this location.

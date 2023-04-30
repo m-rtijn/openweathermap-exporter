@@ -23,15 +23,16 @@
     SPDX-License-Identifier: AGPL-3.0-or-later
 """
 
-from functools import partial
 from os import environ
 from sys import exit
 from time import sleep
+from typing import Optional
 
 import yaml
 from prometheus_client import Gauge, start_http_server
 
-from openweathermap import Location, OpenWeatherMap, WeatherInformation
+from openweathermap import OpenWeatherMapLocation, OpenWeatherMap, WeatherInformation
+from openmeteo import OpenMeteo, OpenMeteoLocation
 
 label_names = ["latitude", "longitude", "location_country_code", "location_name"]
 
@@ -210,27 +211,263 @@ air_pollution_gauges = {
     gauge_nh3 : "nh3"
 }
 
+om_gauge_pm10 = Gauge(
+    "open_meteo_air_quality_pm10",
+    "Particulate matter with diameter smaller than 10 µm (PM10) close to surface (10 meter above ground) in μg/m³.",
+    labelnames=label_names
+)
+
+om_gauge_pm2_5 = Gauge(
+    "open_meteo_air_quality_pm2_5",
+    "Particulate matter with diameter smaller than 2.5 µm (PM2.5) close to surface (10 meter above ground) in μg/m³",
+    labelnames=label_names
+)
+
+om_gauge_co = Gauge(
+    "open_meteo_air_quality_co",
+    "Carbon monoxide concentration in μg/m³ close to the surface (10 meter above ground)",
+    labelnames=label_names
+)
+
+om_gauge_no2 = Gauge(
+    "open_meteo_air_quality_no2",
+    "Nitrogen dioxide concentration in μg/m³ close to the surface (10 meter above ground)",
+    labelnames=label_names
+)
+
+om_gauge_so2 = Gauge(
+    "open_meteo_air_quality_so2",
+    "Sulphur dioxide concentration in μg/m³ close to the surface (10 meter above ground)",
+    labelnames=label_names
+)
+
+om_gauge_o3 = Gauge(
+    "open_meteo_air_quality_o3",
+    "Ozone concentration in μg/m³ close to the surface (10 meter above ground)",
+    labelnames=label_names
+)
+
+om_gauge_nh3 = Gauge(
+    "open_meteo_air_quality_nh3",
+    "Ammonia concentration in μg/m³ close to the surface (10 meter above ground)",
+    labelnames=label_names
+)
+
+om_gauge_aerosol_optical_depth = Gauge(
+    "open_meteo_air_quality_aerosol_optical_depth",
+    "Aerosol optical depth at 550 nm of the entire atmosphere to indicate haze.",
+    labelnames=label_names
+)
+
+om_gauge_dust = Gauge(
+    "open_meteo_air_quality_dust",
+    "Saharan dust particles close to surface level (10 meter above ground) in μg/m³.",
+    labelnames=label_names
+)
+
+om_gauge_uv_index = Gauge(
+    "open_meteo_air_quality_uv_index",
+    "UV index considering clouds, conforming to the WHO definition",
+    labelnames=label_names
+)
+
+om_gauge_uv_index_clear_sky = Gauge(
+    "open_meteo_air_quality_uv_index_clear_sky",
+    "UV index considering clear sky, conforming to the WHO definition",
+    labelnames=label_names
+)
+
+om_gauge_alder_pollen = Gauge(
+    "open_meteo_air_quality_alder_pollen",
+    "Alder pollen concentration in grains/m³",
+    labelnames=label_names
+)
+
+om_gauge_birch_pollen = Gauge(
+    "open_meteo_air_quality_birch_pollen",
+    "Birch pollen concentration in grains/m³",
+    labelnames=label_names
+)
+
+om_gauge_grass_pollen = Gauge(
+    "open_meteo_air_quality_grass_pollen",
+    "Grass pollen concentration in grains/m³",
+    labelnames=label_names
+)
+
+om_gauge_mugwort_pollen = Gauge(
+    "open_meteo_air_quality_mugwort_pollen",
+    "Mugwort pollen concentration in grains/m³",
+    labelnames=label_names
+)
+
+om_gauge_olive_pollen = Gauge(
+    "open_meteo_air_quality_olive_pollen",
+    "Olive pollen concentration in grains/m³",
+    labelnames=label_names
+)
+
+om_gauge_ragweed_pollen = Gauge(
+    "open_meteo_air_quality_ragweed_pollen",
+    "Ragweed pollen concentration in grains/m³",
+    labelnames=label_names
+)
+
+om_gauge_eaqi = Gauge(
+    "open_meteo_air_quality_european_aqi",
+    "European Air Quality Index (AQI) calculated for different particulate matter and gases individually. The consolidated european_aqi returns the maximum of all individual indices. Ranges from 0-20 (good), 20-40 (fair), 40-60 (moderate), 60-80 (poor), 80-100 (very poor) and exceeds 100 for extremely poor conditions.",
+    labelnames=label_names
+)
+
+om_gauge_eaqi_pm2_5 = Gauge(
+    "open_meteo_air_quality_european_aqi_pm2_5",
+    "European Air Quality Index (AQI) calculated for different particulate matter and gases individually. The consolidated european_aqi returns the maximum of all individual indices. Ranges from 0-20 (good), 20-40 (fair), 40-60 (moderate), 60-80 (poor), 80-100 (very poor) and exceeds 100 for extremely poor conditions.",
+    labelnames=label_names
+)
+
+om_gauge_eaqi_pm10 = Gauge(
+    "open_meteo_air_quality_european_aqi_pm10",
+    "European Air Quality Index (AQI) calculated for different particulate matter and gases individually. The consolidated european_aqi returns the maximum of all individual indices. Ranges from 0-20 (good), 20-40 (fair), 40-60 (moderate), 60-80 (poor), 80-100 (very poor) and exceeds 100 for extremely poor conditions.",
+    labelnames=label_names
+)
+
+om_gauge_eqai_no2 = Gauge(
+    "open_meteo_air_quality_european_aqi_no2",
+    "European Air Quality Index (AQI) calculated for different particulate matter and gases individually. The consolidated european_aqi returns the maximum of all individual indices. Ranges from 0-20 (good), 20-40 (fair), 40-60 (moderate), 60-80 (poor), 80-100 (very poor) and exceeds 100 for extremely poor conditions.",
+    labelnames=label_names
+)
+
+om_gauge_eqai_o3 = Gauge(
+    "open_meteo_air_quality_european_aqi_o3",
+    "European Air Quality Index (AQI) calculated for different particulate matter and gases individually. The consolidated european_aqi returns the maximum of all individual indices. Ranges from 0-20 (good), 20-40 (fair), 40-60 (moderate), 60-80 (poor), 80-100 (very poor) and exceeds 100 for extremely poor conditions.",
+    labelnames=label_names
+)
+
+om_gauge_eqai_so2 = Gauge(
+    "open_meteo_air_quality_european_aqi_so2",
+    "European Air Quality Index (AQI) calculated for different particulate matter and gases individually. The consolidated european_aqi returns the maximum of all individual indices. Ranges from 0-20 (good), 20-40 (fair), 40-60 (moderate), 60-80 (poor), 80-100 (very poor) and exceeds 100 for extremely poor conditions.",
+    labelnames=label_names
+)
+
+open_meteo_air_quality_gauges = {
+    om_gauge_pm10: "pm10",
+    om_gauge_pm2_5: "pm2_5",
+    om_gauge_co: "co",
+    om_gauge_no2: "no2",
+    om_gauge_so2: "so2",
+    om_gauge_o3: "o3",
+    om_gauge_nh3: "nh3",
+    om_gauge_aerosol_optical_depth: "aerosol_optical_depth",
+    om_gauge_dust: "dust",
+    om_gauge_uv_index: "uv_index",
+    om_gauge_uv_index_clear_sky: "uv_index_clear_sky",
+    om_gauge_alder_pollen: "alder_pollen",
+    om_gauge_birch_pollen: "birch_pollen",
+    om_gauge_grass_pollen: "grass_pollen",
+    om_gauge_mugwort_pollen: "mugwort_pollen",
+    om_gauge_olive_pollen: "olive_pollen",
+    om_gauge_ragweed_pollen: "ragweed_pollen",
+    om_gauge_eaqi: "european_aqi",
+    om_gauge_eaqi_pm2_5: "european_aqi_pm2_5",
+    om_gauge_eaqi_pm10: "european_aqi_pm10",
+    om_gauge_eqai_no2: "european_aqi_no2",
+    om_gauge_eqai_o3: "european_aqi_o3",
+    om_gauge_eqai_so2: "european_aqi_so2"
+}
+
+class Location:
+    """Wrapper location class for access to both OpenWeatherMap and Open-Meteo data"""
+
+    location_name: str
+    country_code: str
+
+    provided_lat: Optional[float] = None
+    provided_lon: Optional[float] = None
+
+    owml: OpenWeatherMapLocation
+    oml: Optional[OpenMeteoLocation] = None
+    open_meteo_enabled: bool = False
+
+    def __init__(self, owm, **kwargs):
+        """Create a generic Location class with support for all weather backends.
+
+        Accepted keyword arguments:
+        location_name: str
+        country_code: str
+        lat: float
+        lon: float
+        open_meteo_enabled: bool
+        """
+        self.location_name = kwargs["location_name"]
+        self.country_code = kwargs["country_code"]
+
+        try:
+            self.provided_lat = kwargs["lat"]
+            self.provided_lon = kwargs["lon"]
+        except KeyError:
+            pass
+
+        if self.provided_lat is None:
+            self.owml = OpenWeatherMapLocation(owm, location_name=self.location_name, country_code=self.country_code)
+        else:
+            self.owml = OpenWeatherMapLocation(
+                owm,
+                location_name=self.location_name,
+                country_code=self.country_code,
+                lat=self.provided_lat,
+                lon=self.provided_lon
+            )
+
+        try:
+            self.open_meteo_enabled = kwargs["open_meteo_enabled"]
+        except KeyError:
+            pass
+
+        if self.open_meteo_enabled:
+            om = OpenMeteo()
+            if self.provided_lat is None:
+                self.oml = OpenMeteoLocation(
+                    om,
+                    location_name=self.location_name,
+                    country_code=self.country_code
+                )
+            else:
+                self.oml = OpenMeteoLocation(
+                    om,
+                    location_name=self.location_name,
+                    country_code=self.country_code,
+                    lat=self.provided_lat,
+                    lon=self.provided_lon
+                )
+
 # TODO: Maybe add a metric for total api calls done?
 # meta_metrics = {}
 
-def get_location_current_weather(location: Location, attr: str):
-    """Helper function to easily get current weather data via a partial."""
+def get_location_current_weather(location: OpenWeatherMapLocation, attr: str) -> float:
+    """Helper function to easily get current weather data."""
     val = getattr(location.get_current_weather(), attr)
     if val is None:
         return 0
 
     return val
 
-def get_location_current_air_pollution(location: Location, attr: str):
-    """Helper function to easily get current air pollution data via a partial."""
+def get_location_current_air_pollution(location: OpenWeatherMapLocation, attr: str) -> float:
+    """Helper function to easily get current air pollution data."""
     val = getattr(location.get_current_air_pollution(), attr)
     if val is None:
         return 0
 
     return val
 
-def set_metrics(locations: list[Location]):
-    """Set all defined metrics to their newest value"""
+def get_location_current_open_meteo_air_quality(location: OpenMeteoLocation, attr: str) -> float:
+    val = getattr(location.get_current_air_quality(), attr)
+    if val is None:
+        return 0
+
+    return val
+
+def set_openweathermap_metrics(locations: list[OpenWeatherMapLocation]):
+    """Set all defined OpenWeatherMap metrics to their newest value"""
     for loc in locations:
         # pylint: disable=C0206
         for gauge in weather_gauges:
@@ -239,7 +476,7 @@ def set_metrics(locations: list[Location]):
                 latitude=loc.coord.lat,
                 longitude=loc.coord.lon,
                 location_country_code=loc.country_code
-            ).set(partial(get_location_current_weather, loc, weather_gauges[gauge])())
+            ).set(get_location_current_weather(loc, weather_gauges[gauge]))
 
         for gauge in air_pollution_gauges:
             gauge.labels(
@@ -247,7 +484,20 @@ def set_metrics(locations: list[Location]):
                 latitude=loc.coord.lat,
                 longitude=loc.coord.lon,
                 location_country_code=loc.country_code
-            ).set(partial(get_location_current_air_pollution, loc, air_pollution_gauges[gauge])())
+            ).set(get_location_current_air_pollution(loc, air_pollution_gauges[gauge]))
+
+def set_openmeteo_metrics(locations: list[OpenMeteoLocation]) -> None:
+    """Set all defined Open-Meteo metrics to their newest value"""
+
+    for loc in locations:
+        # pylint: disable=C0206
+        for gauge in open_meteo_air_quality_gauges:
+            gauge.labels(
+                location_name=loc.location_name,
+                latitude=loc.coord.lat,
+                longitude=loc.coord.lon,
+                location_country_code=loc.country_code
+            ).set(get_location_current_open_meteo_air_quality(loc, open_meteo_air_quality_gauges[gauge]))
 
 if __name__ == "__main__":
 
@@ -272,12 +522,22 @@ if __name__ == "__main__":
             " via the configuration file.")
 
     owm = OpenWeatherMap(api_key)
+    open_meteo_enabled: bool = False
+    try:
+        open_meteo_enabled = config["prometheus_exporter"]["open_meteo_additional_data"]
+    except KeyError:
+        pass
+
+    om: Optional[OpenMeteo] = None
+    if open_meteo_enabled:
+        om = OpenMeteo()
 
     locations: list[Location] = []
     for conf_location in config["prometheus_exporter"]["locations"]:
         try:
             locations.append(Location(
                 owm,
+                open_meteo_enabled=open_meteo_enabled,
                 location_name=conf_location["name"],
                 country_code=conf_location["cc"],
                 lat=conf_location["lat"],
@@ -286,13 +546,22 @@ if __name__ == "__main__":
         except KeyError:
             locations.append(Location(
                 owm,
+                open_meteo_enabled=open_meteo_enabled,
                 location_name=conf_location["name"],
                 country_code=conf_location["cc"]
             ))
 
+    openweathermap_locations = [ l.owml for l in locations ]
+
+    if open_meteo_enabled:
+        openmeteo_locations = [ l.oml for l in locations ]
+
     start_http_server(config["prometheus_exporter"]["port"], config["prometheus_exporter"]["host"])
 
-    # Not sure why this is required?
     while True:
-        set_metrics(locations)
+        set_openweathermap_metrics(openweathermap_locations)
+
+        if open_meteo_enabled:
+            set_openmeteo_metrics(openmeteo_locations)
+
         sleep(600)
