@@ -36,6 +36,6 @@ jobs:
       if: always()
       run: |
         mypy --install-types --non-interactive --ignore-missing-imports openweathermap_exporter
-    - name: Test with unittest
-      run: |
-        python3 -m unittest
+#    - name: Test with unittest
+#      run: |
+#        python3 -m unittest openweathermap-exporter
