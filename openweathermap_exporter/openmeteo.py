@@ -274,6 +274,12 @@ class OpenMeteoLocation:
         now: datetime = datetime.now()
         now_hour = now.replace(minute=0, second=0, microsecond=0)
 
-        index = self.last_air_quality_forecast.timestamps.index(now_hour)
+        # Around midnight, there is no longer a datapoint for 23:00 in the previous day
+        # TODO: Further research why this happens
+        index: int
+        try:
+            index = self.last_air_quality_forecast.timestamps.index(now_hour)
+        except ValueError:
+            index = 0
 
         return OpenMeteoCurrentAirQualityForecast(index, self.last_air_quality_forecast)
