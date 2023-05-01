@@ -33,5 +33,8 @@ print(l.get_current_air_pollution())
 
 class OpenWeatherMapTestCases(unittest.TestCase):
 
-    def test_sample(self):
-        self.assertIsNotNone(l.get_current_air_pollution().co)
+    def test_get_current_air_pollution(self):
+        self.assertIsNotNone(l.get_current_air_pollution())
+
+    def test_get_current_weather(self):
+        self.assertIsNotNone(l.get_current_weather())
