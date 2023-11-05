@@ -506,6 +506,7 @@ if __name__ == "__main__":
         config_filepath = environ["OPENWEATHERMAP_EXPORTER_CONFIGURATION_FILE"]
     except:
         config_filepath = "openweathermap_exporter.yml"
+    print(f"Reading config from {config_filepath}")
 
     with open(config_filepath, 'r') as f:
         config = yaml.load(f, Loader=yaml.SafeLoader)
@@ -527,6 +528,14 @@ if __name__ == "__main__":
         open_meteo_enabled = config["prometheus_exporter"]["open_meteo_additional_data"]
     except KeyError:
         pass
+    print(f"open_meteo_enabled: {open_meteo_enabled}")
+
+    ignore_failure: bool = False
+    try:
+        ignore_failure = config["prometheus_exporter"]["ignore_failure"]
+    except KeyError:
+        pass
+    print(f"ignore_failure: {ignore_failure}")
 
     om: Optional[OpenMeteo] = None
     if open_meteo_enabled:
@@ -559,9 +568,15 @@ if __name__ == "__main__":
     start_http_server(config["prometheus_exporter"]["port"], config["prometheus_exporter"]["host"])
 
     while True:
-        set_openweathermap_metrics(openweathermap_locations)
+        try:
+            set_openweathermap_metrics(openweathermap_locations)
 
-        if open_meteo_enabled:
-            set_openmeteo_metrics(openmeteo_locations)
+            if open_meteo_enabled:
+                set_openmeteo_metrics(openmeteo_locations)
+        except Exception as exc:
+            if ignore_failure:
+                print(f"Failed to get metrics from API {exc}")
+            else:
+                raise exc
 
         sleep(600)
